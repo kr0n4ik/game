@@ -1,4 +1,5 @@
 function character(geometries, json) {
+	this.sprite = null;
 	this.mixes = [];
 	this.clips = [];
 	this.TurnRate = 5;
@@ -59,6 +60,8 @@ character.prototype.update = function(json) {
 		this.turn = json.turn;
 	if (json.move)
 		this.move = json.move;
+	if (json.talk)
+		this.talk(json.talk);
 }
 
 character.prototype.timer = function() {
@@ -80,6 +83,11 @@ character.prototype.animate = function(delta) {
 		center.z -= Math.cos(this.root.rotation.y) * this.BackSpeed * delta;
 	}
 	this.root.position.copy( center );
+	if (this.sprite) {
+		this.sprite.position.x = this.root.position.x;
+		this.sprite.position.z = this.root.position.z;
+		this.sprite.position.y = 120;
+	}
 	camera.position.x = this.root.position.x - Math.sin(this.root.rotation.y) * 500;
 	camera.position.z = this.root.position.z - Math.cos(this.root.rotation.y) * 500;
 	camera.position.y = 100;
@@ -90,4 +98,22 @@ character.prototype.animate = function(delta) {
 		for(var i in this.mixes[this.anim]) 
 			this.mixes[this.anim][i].update(delta);
 		
+}
+
+character.prototype.talk = function(message) {
+	if (this.sprite) {
+		scene.remove(this.sprite);
+	}
+	console.log(message);
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('2d');
+	context.font="22px Arial";
+	context.fillStyle = "rgba(200, 255, 255, 1.0)";
+	context.fillText( message, 0, 100);
+	var texture = new THREE.Texture(canvas) 
+	texture.needsUpdate = true;
+	var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false} );
+	this.sprite = new THREE.Sprite( spriteMaterial );
+	this.sprite.scale.set(80,50,1.0);
+	scene.add(this.sprite);
 }
